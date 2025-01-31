@@ -1,5 +1,6 @@
 import MenuSystem from './classes/MenuSystem.js';
 import AddSystem from './classes/AddSystem.js';
+import UpdateSystem from './classes/UpdateSystem.js';
 import { /*pool,*/ connectToDb } from './utils/connection.js';
 
 await connectToDb();
@@ -7,8 +8,12 @@ await connectToDb();
 // CREATE MENU, SUBMENUS, AND OPTIONS
 // SEE MenuSystem.ts in classes for logic behind menu system
 async function main() {
+    // init menu system
     const menuSystem = new MenuSystem();
+    // init all the 'add' to DB logic
     const addSystem = new AddSystem();
+    // init all the 'update' to DB logic
+    const updateSystem = new UpdateSystem();
 
     // Create VIEW submenu - Contains all logic for choices inside option async function
     // First parameter = SubMenu name to attach the object 
@@ -55,11 +60,11 @@ async function main() {
     const updateSubmenu = menuSystem.createSubMenu();
     menuSystem.addSubMenuItem(updateSubmenu, 'Update employee role', async () => {
         console.log('Updating employee role...');
-        // Add logic here
+        await updateSystem.updateEmployeeRole();
     });
     menuSystem.addSubMenuItem(updateSubmenu, 'Update employee manager', async () => {
         console.log('Updating employee manager...');
-        // Add logic here
+        await updateSystem.updateEmployeeManager();
     });
 
     // Create DELETE submenu
