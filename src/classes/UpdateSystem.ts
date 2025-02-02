@@ -1,52 +1,83 @@
 import inquirer from 'inquirer';
 import { pool } from '../utils/connection.js'
-import { validateDBString } from '../utils/validator.js';
 import BaseSystem from './BaseSystem.js';
 
 class UpdateSystem extends BaseSystem {
     async updateEmployeeRole(): Promise<void> {
-        const mgrsList = await this.getMgrsList();
-        const empList = await this.getCurrentEmployees();
-        const answers = await inquirer.prompt([
-            { name: 'fullName', message: 'Select employee:', type: 'list', choices: [...empList] },
-            { name: 'roleTitle', message: 'Role Title:', type: 'input', validate: validateDBString },
-            { name: 'departmentName', message: 'Department Name:', type: 'input', validate: validateDBString },
-            { name: 'salary', message: 'Salary:', type: 'number' },
-            { name: 'managerId', message: 'Manager (optional):', type: 'list', choices: [...mgrsList, 'None'] }
-        ]);
+        try {
+            const empList = await pool.query(`SELECT id, CONCAT(first_name, ' ', last_name) AS name FROM employee ORDER BY last_name, first_name`);
+            const rolesList = await pool.query(`SELECT r.id, r.title, r.salary, d.name AS department FROM role r
+            INNER JOIN department d ON r.department = d.id ORDER BY d.name, r.title`);
 
-        // Check if department exists, insert if needed
-        const departmentId = await this.employeeDeptInsert(answers.departmentName);
+            if (empList.rows.length === 0 || rolesList.rows.length === 0) {
+                console.log('No employees and/or roles found in the database. Please add employees and roles before updating.');
+                return;
+            }
 
-        // Check if role exists, insert if needed
-        const roleId = await this.employeeRoleInsert(answers.roleTitle, answers.salary, departmentId);
+            const { employeeId, roleId } = await inquirer.prompt([
+                {
+                    type: 'list',
+                    name: 'employeeId',
+                    message: 'Select an employee to update:',
+                    choices: empList.rows.map(row => ({ name: row.name, value: row.id }))
+                },
+                {
+                    type: 'list',
+                    name: 'roleId',
+                    message: 'Select a new role:',
+                    choices: rolesList.rows.map(row => ({
+                        name: `Title: ${row.title} - Salary: ${row.salary} - Department: ${row.department}`,
+                        value: row.id
+                    }))
+                }
+            ]);
 
-        // Reset the value of managerId to the DB id of what was chosen in the prompt
-        answers.managerId = this.employeeMgrInsert(answers.managerId);
+            const result = await pool.query('UPDATE employee SET role_id = $1 WHERE id = $2 RETURNING *', [roleId, employeeId]);
 
-        const empId = await pool.query('SELECT id FROM employee WHERE first_name = $1 AND last_name = $2', [answers.fullName.split(' ')[0], answers.fullName.split(' ')[1]]);
-        
-        // Update the employee
-        await pool.query('UPDATE employee SET role_id = $1, manager_id = $2 WHERE employee.id = $3', [roleId, answers.managerId, empId]);
+            if (result.rowCount === 1) {
+                console.log(`Employee role updated successfully`);
+            }
+        } catch (err) {
+            console.error('Error updating employee role', err);
+            throw err;
+        }
     }
 
     async updateEmployeeManager(): Promise<void> {
-        const mgrsList = await this.getMgrsList();
-        const empList = await this.getCurrentEmployees();
-        const answers = await inquirer.prompt([
-            { name: 'fullName', message: 'Select employee:', type: 'list', choices: [...empList] },
-            { name: 'managerId', message: 'Manager (optional):', type: 'list', choices: [...mgrsList, 'None'] }
-        ]);
+        try {
+            const empList = await pool.query(`SELECT id, CONCAT(first_name, ' ', last_name) AS name FROM employee ORDER BY last_name, first_name`);
 
-        // Reset the value of managerId to the DB id of what was chosen in the prompt
-        answers.managerId = this.employeeMgrInsert(answers.managerId);
+            if (empList.rows.length === 0) {
+                console.log('No employees found in the database. Please add employees before updating.');
+                return;
+            }
 
-        const empId = await pool.query('SELECT id FROM employee WHERE first_name = $1 AND last_name = $2', [answers.fullName.split(' ')[0], answers.fullName.split(' ')[1]]);
+            const { employeeId, managerId } = await inquirer.prompt([
+                {
+                    type: 'list',
+                    name: 'employeeId',
+                    message: 'Select an employee to update:',
+                    choices: empList.rows.map(row => ({ name: row.name, value: row.id }))
+                },
+                {
+                    type: 'list',
+                    name: 'managerId',
+                    message: 'Select a new manager:',
+                    choices: empList.rows.map(row => ({ name: row.name, value: row.id }))
+                }
+            ]);
 
-        // Update the employee
-        await pool.query('UPDATE employee SET manager_id = $1 WHERE employee.id = $2', [answers.managerId, empId]);
+            const result = await pool.query('UPDATE employee SET manager_id = $1 WHERE id = $2 RETURNING *', [managerId, employeeId]);
 
+            if (result.rowCount === 1) {
+                console.log(`Employee manager updated successfully`);
+            }
+        } catch (err) {
+            console.error('Error updating employee manager', err);
+            throw err;
+        }
     }
+
 }
 
 export default UpdateSystem;

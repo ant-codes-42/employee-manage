@@ -6,55 +6,116 @@ import BaseSystem from './BaseSystem.js';
 class AddSystem extends BaseSystem {
 
     async addEmployee(): Promise<void> {
-        const mgrsList = await this.getMgrsList();
-        const answers = await inquirer.prompt([
-            { name: 'firstName', message: 'First Name:', type: 'input', validate: validateDBString },
-            { name: 'lastName', message: 'Last Name:', type: 'input', validate: validateDBString },
-            { name: 'roleTitle', message: 'Role Title:', type: 'input', validate: validateDBString },
-            { name: 'departmentName', message: 'Department Name:', type: 'input', validate: validateDBString },
-            { name: 'salary', message: 'Salary:', type: 'number' },
-            { name: 'managerId', message: 'Manager (optional):', type: 'list', choices: [...mgrsList, 'None'] }
-        ]);
+        try {
+            const rolesList = await pool.query(`SELECT r.id, r.title, r.salary, d.name AS department FROM role r
+                INNER JOIN department d ON r.department = d.id ORDER BY d.name, r.title`);
 
-        // Check if department exists, insert if needed
-        const departmentId = await this.employeeDeptInsert(answers.departmentName);
+            const mgrList = await pool.query(`SELECT id, CONCAT(first_name, ' ', last_name) AS name FROM employee ORDER BY name`);
+            mgrList.rows.push({ id: null, name: 'None' });
 
-        // Check if role exists, insert if needed
-        const roleId = await this.employeeRoleInsert(answers.roleTitle, answers.salary, departmentId);
+            if (rolesList.rows.length === 0) {
+                console.log('No roles found in the database. Please add roles before adding employees.');
+                return;
+            }
 
-        // Reset the value of managerId to the DB id of what was chosen in the prompt
-        answers.managerId = this.employeeMgrInsert(answers.managerId);
+            const { firstName, lastName, roleId, managerId } = await inquirer.prompt([
+                {
+                    type: 'input',
+                    name: 'firstName',
+                    message: "Enter employee's first name:",
+                    validate: validateDBString,
+                    filter: (input: string) => input.trim()
+                },
+                {
+                    type: 'input',
+                    name: 'lastName',
+                    message: "Enter employee's last name:",
+                    validate: validateDBString,
+                    filter: (input: string) => input.trim()
+                },
+                {
+                    type: 'list',
+                    name: 'roleId',
+                    message: "Select employee's role:",
+                    choices: rolesList.rows.map(row => ({
+                        name: `Title: ${row.title} - Salary: ${row.salary} - Department: ${row.department}`,
+                        value: row.id
+                    }))
+                },
+                {
+                    type: 'list',
+                    name: 'managerId',
+                    message: "Select employee's manager (optional):",
+                    choices: mgrList.rows.map(row => ({ name: row.name, value: row.id }))
+                }
+            ]);
 
-        // Insert new employee
-        await pool.query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ($1, $2, $3, $4)', [answers.firstName, answers.lastName, roleId, answers.managerId]);
+            const result = await pool.query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ($1, $2, $3, $4) RETURNING id', [firstName, lastName, roleId, managerId]);
 
-        console.log('Employee added successfully');
+            if (result.rows.length === 1) {
+                console.log('Employee added successfully');
+            }
+
+        } catch (err) {
+            console.error('Error adding employee', err);
+            throw err;
+        }
     }
 
     async addRole(): Promise<void> {
-        const answers = await inquirer.prompt([
-            { name: 'title', message: 'Role Title:', type: 'input', validate: validateDBString },
-            { name: 'salary', message: 'Salary:', type: 'number' },
-            { name: 'departmentName', message: 'Department:', type: 'input', validate: validateDBString }
-        ]);
+        try {
+            const deptList = await pool.query('SELECT id, name FROM department ORDER BY name');
 
-        // Check if department exists
-        const departmentId = await this.employeeDeptInsert(answers.departmentName);
+            if (deptList.rows.length === 0) {
+                console.log('No departments found in the database. Please add departments before adding roles.');
+                return;
+            }
 
-        await pool.query('INSERT INTO role (title, salary, department) VALUES ($1, $2, $3)', [answers.title, answers.salary, departmentId]);
+            const { roleTitle, salary, departmentId } = await inquirer.prompt([
+                { name: 'roleTitle', message: 'Role title:', type: 'input', validate: validateDBString },
+                { name: 'salary', message: 'Salary:', type: 'number', validate: value => (value !== undefined && value > 0) ? true : 'Salary must be a positive number' },
+                { name: 'departmentId', message: 'Select department:', type: 'list', choices: deptList.rows.map(row => ({ name: row.name, value: row.id })) }
+            ]);
+
+            const result = await pool.query('INSERT INTO role (title, salary, department) VALUES ($1, $2, $3) RETURNING id', [roleTitle, salary, departmentId]);
+            console.log('Role created successfully. Role ID:', result.rows[0].id);
+
+        } catch (err) {
+            if ((err as { code: string }).code === '23505') {
+                console.log('Role already exists!');
+                return;
+            } else {
+                console.error('Error adding role', err);
+                throw err;
+            }
+        }
     }
 
     async addDept(): Promise<void> {
-        const answers = await inquirer.prompt([{ name: 'departmentName', message: 'Department:', type: 'input', validate: validateDBString }]);
+        try {
+            const deptList = await pool.query('SELECT name FROM department');
 
-        // Check if department exists
-        const deptRes = await pool.query('SELECT id FROM department WHERE name = $1', [answers.departmentName]);
-        if (deptRes.rows.length > 0) {
-            console.log('Department already exists!');
-            return;
-        } else {
-            // Insert new department
-            await pool.query('INSERT INTO department (name) VALUES ($1) RETURNING id', [answers.departmentName]);
+            const { deptName } = await inquirer.prompt([
+                {
+                    type: 'input',
+                    name: 'deptName',
+                    message: 'Enter new department name:',
+                    validate: (input: string) => {
+                        const trimmed = input.trim();
+                        if (!trimmed) return 'Department name cannot be empty';
+                        if (deptList.rows.some(dept => dept.name === trimmed)) {
+                            return `Department '${trimmed}' already exists`;
+                        }
+                        return true;
+                    },
+                    filter: (input: string) => input.trim()
+                }
+            ]);
+            const result = await pool.query('INSERT INTO department (name) VALUES ($1) RETURNING id', [deptName]);
+
+            console.log('Department added successfully. Department ID:', result.rows[0].id);
+        } catch (err) {
+            console.error('Error adding department', err);
         }
     }
 }
