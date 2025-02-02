@@ -1,7 +1,8 @@
 import MenuSystem from './classes/MenuSystem.js';
 import AddSystem from './classes/AddSystem.js';
 import UpdateSystem from './classes/UpdateSystem.js';
-import { /*pool,*/ connectToDb } from './utils/connection.js';
+import DeleteSystem from './classes/DeleteSystem.js';
+import { connectToDb } from './utils/connection.js';
 
 await connectToDb();
 
@@ -14,6 +15,8 @@ async function main() {
     const addSystem = new AddSystem();
     // init all the 'update' to DB logic
     const updateSystem = new UpdateSystem();
+    // init all the 'delete' to DB logic
+    const deleteSystem = new DeleteSystem();
 
     // Create VIEW submenu - Contains all logic for choices inside option async function
     // First parameter = SubMenu name to attach the object 
@@ -71,15 +74,15 @@ async function main() {
     const deleteSubmenu = menuSystem.createSubMenu();
     menuSystem.addSubMenuItem(deleteSubmenu, 'Delete an employee', async () => {
         console.log('Deleting an employee...');
-        // Add logic here
+        await deleteSystem.deleteEmployee();
     });
     menuSystem.addSubMenuItem(deleteSubmenu, 'Delete a role', async () => {
         console.log('Deleting a role...');
-        // Add logic here
+        await deleteSystem.deleteRole();
     });
     menuSystem.addSubMenuItem(deleteSubmenu, 'Delete a department', async () => {
         console.log('Deleting a department...');
-        // Add logic here
+        await deleteSystem.deleteDepartment();
     });
 
     // Add main menu items

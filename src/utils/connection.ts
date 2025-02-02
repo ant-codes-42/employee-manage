@@ -24,4 +24,22 @@ const connectToDb = async () => {
   }
 };
 
-export { pool, connectToDb };
+const transaction = async (queries: { text: string; params?: any[] }[]) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const results = [];
+    for (const q of queries) {
+      results.push(await client.query(q.text, q.params));
+    }
+    await client.query('COMMIT');
+    return results;
+  } catch (e) {
+    await client.query('ROLLBACK');
+    throw e;
+  } finally {
+    client.release();
+  }
+};
+
+export { pool, transaction, connectToDb };
