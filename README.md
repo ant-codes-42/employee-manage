@@ -41,6 +41,8 @@ NOTE: You will need to have installed Node.js as a dependency. Please navigate t
 
 ## Usage
 
+[A video walkthrough of the application in use is available here.](https://youtu.be/K76n-lO_Vgs)
+
 The initial options will present you with View, Add, Update, and Delete.
 
 To add information to the database select the Add option.
