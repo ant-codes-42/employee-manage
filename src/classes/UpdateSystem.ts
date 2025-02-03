@@ -59,19 +59,28 @@ class UpdateSystem {
                 return;
             }
 
-            // Prompt user to select an employee and a new manager
-            const { employeeId, managerId } = await inquirer.prompt([
+            // Prompt user to select an employee
+            const { employeeId } = await inquirer.prompt([
                 {
                     type: 'list',
                     name: 'employeeId',
                     message: 'Select an employee to update:',
                     choices: empList.rows.map(row => ({ name: row.name, value: row.id }))
-                },
+                }
+            ]);
+
+            // Filter out the selected employee from the manager choices
+            const managerChoices = empList.rows
+                .filter(row => row.id !== employeeId)
+                .map(row => ({ name: row.name, value: row.id }));
+            
+            // Prompt user to select a new manager
+            const { managerId } = await inquirer.prompt([
                 {
                     type: 'list',
                     name: 'managerId',
                     message: 'Select a new manager:',
-                    choices: empList.rows.map(row => ({ name: row.name, value: row.id }))
+                    choices: managerChoices
                 }
             ]);
 
