@@ -42,16 +42,16 @@ NOTE: The recommended order for adding information into the database is as follo
 Departments >>> Roles >>> Employees
 This is recommended as roles are dependent on departments and employees are dependent on roles.
 - Option to add a department
--- Department Name
+- - Department Name
 - Option to add a role
--- Role Title
--- Salary
--- Select a department (from existing)
+- - Role Title
+- - Salary
+- - Select a department (from existing)
 - Option to add an employee
--- Employee First Name
--- Employee Last Name
--- Select a role (from existing)
--- Select a manager (optional, from existing)
+- - Employee First Name
+- - Employee Last Name
+- - Select a role (from existing)
+- - Select a manager (optional, from existing)
 
 To update information already existing in the database select the Update option.
 - Option to update an employee record to an already existing role
@@ -59,11 +59,11 @@ To update information already existing in the database select the Update option.
 
 To delete information in the database select the Delete option.
 - Delete an employee
--- If the employee is a manager, either cancel or re-assign managerial responsibilities to another employee
+- - If the employee is a manager, either cancel or re-assign managerial responsibilities to another employee
 - Delete a role
--- If employees are assigned to the role, either cancel or re-assign all employees to another existing role in the database
+- - If employees are assigned to the role, either cancel or re-assign all employees to another existing role in the database
 - Delete a department
--- If roles are assigned to the department, either cancel or re-assign all roles to another existing department in the database.
+- - If roles are assigned to the department, either cancel or re-assign all roles to another existing department in the database.
 
 To view information in the database select the View option.
 - View all employee records
