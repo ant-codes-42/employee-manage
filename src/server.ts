@@ -2,6 +2,7 @@ import MenuSystem from './classes/MenuSystem.js';
 import AddSystem from './classes/AddSystem.js';
 import UpdateSystem from './classes/UpdateSystem.js';
 import DeleteSystem from './classes/DeleteSystem.js';
+import ViewSystem from './classes/ViewSystem.js';
 import { connectToDb } from './utils/connection.js';
 
 await connectToDb();
@@ -17,6 +18,8 @@ async function main() {
     const updateSystem = new UpdateSystem();
     // init all the 'delete' to DB logic
     const deleteSystem = new DeleteSystem();
+    // init all the 'view' from DB logic
+    const viewSystem = new ViewSystem();
 
     // Create VIEW submenu - Contains all logic for choices inside option async function
     // First parameter = SubMenu name to attach the object 
@@ -24,23 +27,23 @@ async function main() {
     const viewSubmenu = menuSystem.createSubMenu();
     menuSystem.addSubMenuItem(viewSubmenu, 'View all employees', async () => {
         console.log('Viewing all employees...');
-        // Add logic here
+        viewSystem.viewAllEmployees();
     });
     menuSystem.addSubMenuItem(viewSubmenu, 'View employees by manager', async () => {
         console.log('Viewing employees by manager...');
-        // Add logic here
+        viewSystem.viewEmployeesByMgr();
     });
     menuSystem.addSubMenuItem(viewSubmenu, 'View employees by department', async () => {
         console.log('Viewing employees by department...');
-        // Add logic here
+        viewSystem.viewEmployeesByDept();
     });
     menuSystem.addSubMenuItem(viewSubmenu, 'View all departments', async () => {
         console.log('Viewing all departments...');
-        // Add logic here
+        viewSystem.viewAllDepts();
     });
     menuSystem.addSubMenuItem(viewSubmenu, 'View all roles', async () => {
         console.log('Viewing all roles...');
-        // Add logic here
+        viewSystem.viewAllRoles();
     });
 
     //Create ADD submenu
