@@ -25,7 +25,7 @@ NOTE: You will need to have installed Node.js as a dependency. Please navigate t
 
 5. Navigate to the /db folder in the root folder of the application.
 
-6. Initialize your Postgres shell. By default this is most commonly 'psql -U postgres' followed by your postgres password.
+6. Initialize your Postgres shell. By default this is most commonly 'psql -U postgres'. You will be prompted for the user account password (in the above example, the password for user postgres).
 
 7. From the Postgres shell run '\i schema.sql' to initialize the database. Once complete, run '\q' to exit the Postgres shell.
 
