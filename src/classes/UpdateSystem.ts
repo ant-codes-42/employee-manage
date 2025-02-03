@@ -51,7 +51,12 @@ class UpdateSystem {
     async updateEmployeeManager(): Promise<void> {
         try {
             // Get list of employees
-            const empList = await pool.query(`SELECT id, CONCAT(first_name, ' ', last_name) AS name FROM employee ORDER BY last_name, first_name`);
+            const empList = await pool.query(`SELECT e.id,
+                CONCAT(e.first_name, ' ', e.last_name) AS name,
+                r.title
+                FROM employee e
+                JOIN role r ON e.role_id = r.id
+                ORDER BY last_name, first_name`);
 
             // If no employees found, return
             if (empList.rows.length === 0) {
@@ -65,14 +70,9 @@ class UpdateSystem {
                     type: 'list',
                     name: 'employeeId',
                     message: 'Select an employee to update:',
-                    choices: empList.rows.map(row => ({ name: row.name, value: row.id }))
+                    choices: empList.rows.map(row => ({ name: `Name: ${row.name} - Title: ${row.title}`, value: row.id }))
                 }
             ]);
-
-            // Filter out the selected employee from the manager choices
-            const managerChoices = empList.rows
-                .filter(row => row.id !== employeeId)
-                .map(row => ({ name: row.name, value: row.id }));
             
             // Prompt user to select a new manager
             const { managerId } = await inquirer.prompt([
@@ -80,7 +80,9 @@ class UpdateSystem {
                     type: 'list',
                     name: 'managerId',
                     message: 'Select a new manager:',
-                    choices: managerChoices
+                    choices: empList.rows
+                        .filter(row => row.id !== employeeId)
+                        .map(row => ({ name: `Name: ${row.name} - Title: ${row.title}`, value: row.id }))
                 }
             ]);
 
