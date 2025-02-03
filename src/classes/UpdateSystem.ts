@@ -1,19 +1,22 @@
 import inquirer from 'inquirer';
-import { pool } from '../utils/connection.js'
-import BaseSystem from './BaseSystem.js';
+import { pool } from '../utils/connection.js';
 
-class UpdateSystem extends BaseSystem {
+class UpdateSystem {
+    // Method to update an employee's role
     async updateEmployeeRole(): Promise<void> {
         try {
+            // Get list of employees and roles
             const empList = await pool.query(`SELECT id, CONCAT(first_name, ' ', last_name) AS name FROM employee ORDER BY last_name, first_name`);
             const rolesList = await pool.query(`SELECT r.id, r.title, r.salary, d.name AS department FROM role r
             INNER JOIN department d ON r.department = d.id ORDER BY d.name, r.title`);
 
+            // If no employees or roles found, return
             if (empList.rows.length === 0 || rolesList.rows.length === 0) {
                 console.log('No employees and/or roles found in the database. Please add employees and roles before updating.');
                 return;
             }
 
+            // Prompt user to select an employee and a new role
             const { employeeId, roleId } = await inquirer.prompt([
                 {
                     type: 'list',
@@ -32,6 +35,7 @@ class UpdateSystem extends BaseSystem {
                 }
             ]);
 
+            // Update the employee's role
             const result = await pool.query('UPDATE employee SET role_id = $1 WHERE id = $2 RETURNING *', [roleId, employeeId]);
 
             if (result.rowCount === 1) {
@@ -43,15 +47,19 @@ class UpdateSystem extends BaseSystem {
         }
     }
 
+    // Method to update an employee's manager
     async updateEmployeeManager(): Promise<void> {
         try {
+            // Get list of employees
             const empList = await pool.query(`SELECT id, CONCAT(first_name, ' ', last_name) AS name FROM employee ORDER BY last_name, first_name`);
 
+            // If no employees found, return
             if (empList.rows.length === 0) {
                 console.log('No employees found in the database. Please add employees before updating.');
                 return;
             }
 
+            // Prompt user to select an employee and a new manager
             const { employeeId, managerId } = await inquirer.prompt([
                 {
                     type: 'list',
@@ -67,6 +75,7 @@ class UpdateSystem extends BaseSystem {
                 }
             ]);
 
+            // Update the employee's manager
             const result = await pool.query('UPDATE employee SET manager_id = $1 WHERE id = $2 RETURNING *', [managerId, employeeId]);
 
             if (result.rowCount === 1) {
