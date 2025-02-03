@@ -14,6 +14,7 @@ const pool = new Pool({
   port: 5432,
 });
 
+// Establish DB connection
 const connectToDb = async () => {
   try {
     await pool.connect();
@@ -24,6 +25,8 @@ const connectToDb = async () => {
   }
 };
 
+// Transaction function to handle multiple queries where we want to ensure all queries are executed or none are
+// Will rollback if any query fails
 const transaction = async (queries: { text: string; params?: any[] }[]) => {
   const client = await pool.connect();
   try {
