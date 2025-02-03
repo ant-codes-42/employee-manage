@@ -29,9 +29,15 @@ NOTE: You will need to have installed Node.js as a dependency. Please navigate t
 
 7. From the Postgres shell run '\i schema.sql' to initialize the database. Once complete, run '\q' to exit the Postgres shell.
 
-8. In your terminal navigate back to the root folder of the application and run 'npm run build'.
+8. Navigate back to the root folder of the application. Find the .env.sample file. Edit this file as follows:
+- DB_USER=postgres | change postgres to the username you used to initialize the psql shell in step 6
+- DB_PASSWORD= | add the password you used to login to the psql shell in step 6
 
-9. Once complete, run 'npm run start' to initialize the application.
+9. Rename this file .env (remove the .sample).
+
+10. In your terminal navigate back to the root folder of the application and run 'npm run build'.
+
+11. Once complete, run 'npm run start' to initialize the application.
 
 ## Usage
 
