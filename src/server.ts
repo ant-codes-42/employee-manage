@@ -27,23 +27,23 @@ async function main() {
     const viewSubmenu = menuSystem.createSubMenu();
     menuSystem.addSubMenuItem(viewSubmenu, 'View all employees', async () => {
         console.log('Viewing all employees...');
-        viewSystem.viewAllEmployees();
+        await viewSystem.viewAllEmployees();
     });
     menuSystem.addSubMenuItem(viewSubmenu, 'View employees by manager', async () => {
         console.log('Viewing employees by manager...');
-        viewSystem.viewEmployeesByMgr();
+        await viewSystem.viewEmployeesByMgr();
     });
     menuSystem.addSubMenuItem(viewSubmenu, 'View employees by department', async () => {
         console.log('Viewing employees by department...');
-        viewSystem.viewEmployeesByDept();
+        await viewSystem.viewEmployeesByDept();
     });
     menuSystem.addSubMenuItem(viewSubmenu, 'View all departments', async () => {
         console.log('Viewing all departments...');
-        viewSystem.viewAllDepts();
+        await viewSystem.viewAllDepts();
     });
     menuSystem.addSubMenuItem(viewSubmenu, 'View all roles', async () => {
         console.log('Viewing all roles...');
-        viewSystem.viewAllRoles();
+        await viewSystem.viewAllRoles();
     });
 
     //Create ADD submenu

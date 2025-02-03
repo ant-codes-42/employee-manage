@@ -12,7 +12,12 @@ class AddSystem {
                 INNER JOIN department d ON r.department = d.id ORDER BY d.name, r.title`);
 
             // Get list of managers
-            const mgrList = await pool.query(`SELECT id, CONCAT(first_name, ' ', last_name) AS name FROM employee ORDER BY name`);
+            const mgrList = await pool.query(`SELECT e.id,
+                CONCAT(e.first_name, ' ', e.last_name) AS name,
+                r.title
+                FROM employee e
+                JOIN role r ON e.role_id = r.id
+                ORDER BY name`);
             mgrList.rows.push({ id: null, name: 'None' });
 
             // If no roles found, return
@@ -50,7 +55,7 @@ class AddSystem {
                     type: 'list',
                     name: 'managerId',
                     message: "Select employee's manager (optional):",
-                    choices: mgrList.rows.map(row => ({ name: row.name, value: row.id }))
+                    choices: mgrList.rows.map(row => ({ name: `Name: ${row.name} - Title: ${row.title}`, value: row.id }))
                 }
             ]);
 

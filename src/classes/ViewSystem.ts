@@ -42,8 +42,7 @@ class ViewSystem {
             // Display table
             console.log('\n\nEmployee Summary:');
             console.log(table(data));
-            console.log('\n\n\n\n\n\n\n\n');
-            return;
+            console.log('\n\n');
 
         } catch (err) {
             console.error('Error getting employees', err);
@@ -92,8 +91,7 @@ class ViewSystem {
                 const headers = ['ID', 'Name', 'Title', 'Salary', 'Department'];
                 console.log(table([headers, ...employees as [EmployeeHierarchy][]]));
             }
-            console.log('\n\n\n\n\n\n\n\n');
-            return;
+            console.log('\n\n');
 
         } catch (err) {
             console.error('Error getting employees', err);
@@ -139,8 +137,7 @@ class ViewSystem {
                 const headers = ['ID', 'Name', 'Title', 'Salary', 'Manager'];
                 console.log(table([headers, ...employees as [EmployeeHierarchy][]]));
             }
-            console.log('\n\n\n\n\n\n\n\n');
-            return;
+            console.log('\n\n');
 
         } catch (err) {
             console.error('Error getting employees', err);
@@ -174,8 +171,7 @@ class ViewSystem {
             // Display table
             console.log(`\n\nDepartment Summary:`);
             console.log(table(data));
-            console.log('\n\n\n\n\n\n\n\n');
-            return;
+            console.log('\n\n');
 
         } catch (err) {
             console.error('Error getting departments', err);
@@ -208,8 +204,7 @@ class ViewSystem {
             // Display table
             console.log(`\n\nRole Summary:`);
             console.log(table(data));
-            console.log('\n\n\n\n\n\n\n\n');
-            return;
+            console.log('\n\n');
 
         } catch (err) {
             console.error('Error getting roles', err);
